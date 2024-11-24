@@ -1,0 +1,10 @@
+{
+    "name": "Restaurante Delicioso",
+    "menu": {
+        "entradas": ["Sopa de tomate", "Ensalada César"],
+        "platos_principales": ["Pasta al pesto", "Pollo a la parrilla"],
+        "postres": ["Tiramisú", "Helado de vainilla"]
+    },
+    "horarios": "Lunes a Domingo, 12:00 PM - 10:00 PM",
+    "ubicacion": "Calle Principal 123, Ciudad Gourmet"
+}
