@@ -1,98 +1,67 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from openai import OpenAI
-import json
 import os
+import sys
+import json
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from src.app.database import get_db
-from src.app.models.test_model import TestModel
-from sqlalchemy import text
-from src.app.database import engine
-import openai
-
-
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from src.app.core.config import load_config
+from src.app.routers import chat_router
+from src.app.databse.database import engine, Base, get_db
+from src.app.services.chat_service import ask_chatbot
+from src.app.core.logger import logger
+import uvicorn
 
 
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
-# Inicializar FastAPI
-app = FastAPI()
-
-# Cargar información del restaurante desde un archivo JSON
-with open(os.path.join(os.path.dirname(__file__), "restaurant_info.json"), "r") as file:
-    restaurant_data = json.load(file)
-
-# Inicializar cliente de OpenAI
-api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = os.getenv("OPENAI_API_KEY")
-#client = OpenAI(api_key=api_key)
-#client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# Modelo Pydantic para la entrada del usuario
-class UserQuery(BaseModel):
-    question: str
-
-@app.post("/chat")
-async def chat_with_bot(query: UserQuery):
-    print("Pregunta del usuario:", query.question)
-    print(api_key)
-    prompt = f"""
-    Eres un asistente virtual para el restaurante {restaurant_data['name']}.
-    Responde solo con la información proporcionada. 
-    Si no tienes la respuesta, indica que no sabes la respuesta.
-
-    Información del restaurante:
-    - Menú: {restaurant_data['menu']}
-    - Horarios: {restaurant_data['horarios']}
-    - Ubicación: {restaurant_data['ubicacion']}
-
-    Pregunta: {query.question}
-    """
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Eventos de inicio y apagado."""
+    logger.info("Inicializando la aplicación.")
+    logger.info("Conectando a la base de datos: %s", os.getenv("DATABASE_URL"))
     try:
-        # Nueva forma de llamada a la API de OpenAI
-        response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Eres un asistente especializado en restaurantes."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=100,
-            temperature=0.5
+        # Configuración inicial, como modelos o datos pre-cargados
+        app.state.db_session = sessionmaker(
+            autocommit=False,
+            autoflush=False,
+            bind=engine,
+            class_=AsyncSession,
         )
-        # Acceder a la respuesta usando notación de punto
-        content = response.choices[0].message.content.strip()
-        return {"response": content}
-    except openai.AuthenticationError as e:
-        raise HTTPException(status_code=500, detail=f"Error en la API de OpenAI: {e}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
+        logger.info("Base de datos inicializada.")
+        yield
+    finally:
+        logger.info("Cerrando la aplicación.")
+        await engine.dispose()
 
-# Endpoint para servir el archivo index.html
-@app.get("/")
-async def get_home():
-    return FileResponse(os.path.join(os.path.dirname(__file__), "static/index.html"))
 
-# Montar la carpeta estática
-static_path = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=static_path), name="static")
+# Inicializar FastAPI con lifespan
+app = FastAPI(lifespan=lifespan)
+# Configurar middlewares
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/test")
-def create_test_item(name: str, description: str, db: Session = Depends(get_db)):
-    item = TestModel(name=name, description=description)
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-    return {"id": item.id, "name": item.name, "description": item.description}
+# Incluir routers
+# app.include_router(restaurant_router.router, prefix="/restaurants", tags=["Restaurants"])
+# app.include_router(menu_router.router, prefix="/menus", tags=["Menus"])
+# app.include_router(reservation_router.router, prefix="/reservations", tags=["Reservations"])
+# app.include_router(order_router.router, prefix="/orders", tags=["Orders"])
+app.include_router(chat_router.router, prefix="/api", tags=["Chat"])
 
-print("Probando conexión a la base de datos...")
-try:
-    with engine.connect() as connection:
-        result = connection.execute(text("SELECT 1"))
-        print("Conexión exitosa:", result.scalar())
-except Exception as e:
-    print("Error al conectar con la base de datos:", e)
+# Servir archivos estáticos
+app.mount("/static", StaticFiles(directory="src/app/static"), name="static")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=os.getenv("PORT", 8000))
+
+
+
