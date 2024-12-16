@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, Table, Date, Time, JSON, Enum
 from sqlalchemy.orm import relationship
-from database import Base
+from src.app.databse.database import Base
 #from src.app.database import Base #para alembic
 #from src.app.enums import MenuCategory  # Importar el Enum #para alembic
-from enums import MenuCategory
+from src.app.databse.enums import MenuCategory
 
 
 class Restaurant(Base):

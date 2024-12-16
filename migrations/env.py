@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import pool
 from alembic import context
 # Importar el motor y los modelos
-from src.app.database import Base  # Asegúrate de usar la ruta completa
+from src.app.databse.database import Base  # Asegúrate de usar la ruta completa
 from src.app.models.restaurant import Restaurant, Menu, Reservation, MenuCategory  # Importa todos los modelos
 
 import os

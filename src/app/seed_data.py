@@ -1,4 +1,4 @@
-from database import SessionLocal
+from src.app.databse.database import SessionLocal
 from models.restaurant import Restaurant, Menu, Reservation, MenuItem
 #TODO: python -m src.app.seed_data
 
