@@ -2,6 +2,21 @@
 from openai import OpenAI
 from src.app.core.config import load_config
 import openai
+from src.app.agent import chat_graph
+
+
+from langchain.schema import HumanMessage
+
+def ask_langgraph_agent(question: str) -> str:
+    """Inicia el grafo y devuelve la respuesta final."""
+    # El estado inicial debe tener una lista de mensajes
+    state = {"messages": [HumanMessage(content=question)]}
+    final_state = chat_graph.invoke(state)  # Invoca el grafo
+    return final_state["messages"][-1].content  # Devuelve el último mensaje (respuesta del chatbot)
+
+
+
+
 
 # Inicializa el cliente OpenAI
 openai.api_key = load_config()["api_key"]
