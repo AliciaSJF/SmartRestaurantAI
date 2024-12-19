@@ -3,23 +3,34 @@ from openai import OpenAI
 from src.app.core.config import load_config
 import openai
 from src.app.agent import chat_graph
-
-
+import logging
 from langchain.schema import HumanMessage
 
-def ask_langgraph_agent(question: str) -> str:
-    """Inicia el grafo y devuelve la respuesta final."""
-    # El estado inicial debe tener una lista de mensajes
-    state = {"messages": [HumanMessage(content=question)]}
-    final_state = chat_graph.invoke(state)  # Invoca el grafo
-    return final_state["messages"][-1].content  # Devuelve el último mensaje (respuesta del chatbot)
 
+logger = logging.getLogger(__name__)
 
-
-
-
-# Inicializa el cliente OpenAI
 openai.api_key = load_config()["api_key"]
+
+def ask_langgraph_agent(question: str, thread_id: str) -> str:
+    """Inicia el grafo y devuelve la respuesta final."""
+    state = {
+        "messages": [HumanMessage(content=question)]  }
+    config = {
+        "configurable": {"thread_id": thread_id} }
+    final_state = chat_graph.invoke(state, config) 
+    return final_state["messages"][-1].content 
+
+def first_message(thread_id : str) -> str:
+    state = {
+        "messages": [] }
+    config = {
+        "configurable": {"thread_id": thread_id} }
+    final_state = chat_graph.invoke(state, config)
+    logger.info(f"first_message: {final_state}")
+    return final_state["messages"][-1].content
+
+
+
 
 def ask_chatbot(question: str) -> str:
     prompt = f"""
