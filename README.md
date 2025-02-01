@@ -1,21 +1,34 @@
-# restaurant-web-with-chatbot
+# 🍽️ SmartRestaurantAI | AI-Powered Restaurant Assistant  
 
-Bienvenido al repositorio del Restaurante Virtual. Este proyecto es una web para un restaurante donde puedes ver el menú, obtener información general y hablar con un chatbot especializado en el restaurante.
+Bienvenido a **SmartRestaurantAI**, un sistema inteligente para la gestión de pedidos y atención al cliente en restaurantes. Este proyecto permite a los usuarios interactuar con un **chatbot basado en IA** para consultar información sobre el restaurante, ver el menú y realizar pedidos, los cuales son gestionados por el equipo del restaurante en una aplicación interna.  
 
-## Características
+---
 
-- **Menú del Restaurante**: Consulta el menú completo del restaurante con todos los platos disponibles.
-- **Información General**: Obtén información sobre los horarios de apertura, la ubicación y otros detalles importantes del restaurante.
-- **Chatbot Especializado**: Interactúa con un chatbot que puede responder a tus preguntas sobre el restaurante utilizando la información proporcionada.
+## 🚀 **Características principales**  
 
-## Tecnologías Utilizadas
+### 🛍️ **Para los clientes**  
+✅ Consulta el **menú completo** y detalles sobre cada plato.  
+✅ Pregunta información sobre el **restaurante, horarios y ubicación**.  
+✅ Realiza pedidos directamente a través del **chatbot con IA**.  
+✅ Confirmación del pedido y almacenamiento en la **base de datos**.  
 
-- **FastAPI**: Framework web para construir la API del chatbot.
-- **OpenAI API**: Utilizada para generar respuestas del chatbot.
-- **Pydantic**: Para la validación de datos.
-- **Uvicorn**: Servidor ASGI para ejecutar la aplicación FastAPI.
+### 🏢 **Para el restaurante**  
+✅ Sistema de gestión donde los **camareros pueden aceptar o rechazar pedidos**, proporcionando una explicación.  
+✅ Base de datos con registro de todos los pedidos y su estado.  
 
-## Instalación
+---
+
+## 🛠️ **Tecnologías utilizadas**  
+
+| Backend  | IA & Procesamiento  | Base de Datos | Infraestructura  |  
+|----------|---------------------|--------------|----------------|  
+| **FastAPI**  | **LangChain & LangGraph**  | **PostgreSQL** | **Docker & Docker Compose** |  
+| **SQLAlchemy & Alembic**  | **OpenAI API (Chatbot)**  | **SQLAlchemy ORM** |  |  
+
+---
+
+
+## 📂 **Instalación y ejecución**  
 
 1. Clona este repositorio:
     ```sh
@@ -49,17 +62,20 @@ Bienvenido al repositorio del Restaurante Virtual. Este proyecto es una web para
 
 2. Abre tu navegador y ve a `http://127.0.0.1:8000` para interactuar con la web del restaurante.
 
-## Endpoints
+## **🔗 Endpoints principales**
+**GET /menu** → Obtiene el menú del restaurante.
+**GET /info **→ Obtiene información sobre el restaurante.
+**POST /chat** → Enviar una pregunta al chatbot.
 
-- **`GET /menu`**: Obtén el menú del restaurante.
-- **`GET /info`**: Obtén información general sobre el restaurante.
-- **`POST /chat`**: Interactúa con el chatbot enviando una pregunta en el siguiente formato:
     ```json
     {
         "question": "Dame el menú"
     }
     ```
+**POST /order** → Realizar un pedido.
+**GET /orders **→ Consultar pedidos en espera de aceptación.
 
-## Contribuciones
+--- 
+## 🤝 Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request para discutir cualquier cambio que te gustaría hacer.
